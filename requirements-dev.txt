@@ -2,3 +2,5 @@ pytest
 pytest-cov==7.1.0
 ruff==0.17.4
 mypy==2.4.1
+playwright==1.65.1
+pytest-playwright==0.10.0
