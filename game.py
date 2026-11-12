@@ -135,15 +135,34 @@ def reachable(board, source):
     return targets
 
 
-def move(position, source, target):
-    """Apply a move in place. Return a short move label."""
+PROMOTION_PIECES = ("Q", "R", "B", "N")
+
+
+def promotes(position, source, target):
+    piece = position[0].get(source)
+    return bool(piece) and piece[1] == "P" and target[1] in "18"
+
+
+def move(position, source, target, promotion=None):
+    """Apply a move in place. Return a short move label.
+
+    A pawn reaching the last rank needs promotion: "Q", "R", "B" or "N".
+    """
     coordinates(target)
     if target not in legal_moves(position, source):
         raise ValueError("That move is not allowed")
+    promoting = promotes(position, source, target)
+    if promoting and promotion not in PROMOTION_PIECES:
+        raise ValueError("Choose a queen, rook, bishop or knight to promote to")
+    if not promoting and promotion is not None:
+        raise ValueError("Only a pawn reaching the last rank promotes")
     board = position[0]
     piece = board.pop(source)
     captured = board.get(target)
     board[target] = piece
+    if promoting:
+        board[target] = piece[0] + promotion
     position[1] = other(position[1])
     suffix = {"check": "+", "checkmate": "#"}.get(status(position), "")
-    return source + ("x" if captured else "-") + target + suffix
+    chosen = "=" + promotion if promoting else ""
+    return source + ("x" if captured else "-") + target + chosen + suffix

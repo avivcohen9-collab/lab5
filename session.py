@@ -10,6 +10,7 @@ from game import (
     legal_moves,
     move,
     new_position,
+    promotes,
     status,
     winner,
 )
@@ -46,18 +47,18 @@ class Session:
         self.moves: list[Move] = []
         self.redo: list[Move] = []
 
-    def play(self, source, target):
-        label = move(self.position, source, target)
+    def play(self, source, target, promotion=None):
+        label = move(self.position, source, target, promotion)
         self.notation.append(label)
-        self.moves.append((source, target, None))
+        self.moves.append((source, target, promotion))
         self.after_move()
 
     def rebuild(self) -> None:
         """Rebuild the position and notation by replaying the moves from the start."""
         self.position = new_position()
         self.notation = []
-        for source, target, _promotion in self.moves:
-            self.notation.append(move(self.position, source, target))
+        for source, target, promotion in self.moves:
+            self.notation.append(move(self.position, source, target, promotion))
         self.after_move()
 
     def undo(self) -> None:
@@ -122,13 +123,22 @@ class Session:
         if command == "move":
             if self.computer_to_move():
                 raise ValueError("Wait for the computer's move")
-            self.play(action.get("source"), action.get("target"))
+            self.play(
+                action.get("source"), action.get("target"), action.get("promotion")
+            )
         elif command == "computer-move":
             if not self.computer_to_move():
                 raise ValueError("It is not the computer's turn")
             self.play(*choose_move(self.position))
         elif command == "legal":
-            return {"targets": legal_moves(self.position, action.get("source"))}
+            source = action.get("source")
+            targets = legal_moves(self.position, source)
+            return {
+                "targets": targets,
+                "promotions": [
+                    t for t in targets if promotes(self.position, source, t)
+                ],
+            }
         elif command == "undo":
             self.undo()
         elif command == "new":
@@ -156,9 +166,7 @@ def replay(data: Any) -> Session:
     redo = parse_moves(data.get("redo"))
     session = Session(data["opponent"])
     for source, target, promotion in moves:
-        if promotion is not None:
-            raise ValueError("promotion is not supported")
-        session.play(source, target)
+        session.play(source, target, promotion)
     session.redo = redo
     return session
 
