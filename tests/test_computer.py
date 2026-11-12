@@ -14,8 +14,19 @@ def test_takes_the_most_valuable_piece():
 
 def test_prefers_checkmate_to_material():
     # b6xd4 wins a knight; Ra8-a1 is mate on the back rank.
-    position = [{"g1": "wK", "f2": "wP", "g2": "wP", "h2": "wP", "d4": "wN",
-                 "g8": "bK", "a8": "bR", "b6": "bB"}, "b"]
+    position = [
+        {
+            "g1": "wK",
+            "f2": "wP",
+            "g2": "wP",
+            "h2": "wP",
+            "d4": "wN",
+            "g8": "bK",
+            "a8": "bR",
+            "b6": "bB",
+        },
+        "b",
+    ]
     assert choose_move(position) == ("a8", "a1")
 
 

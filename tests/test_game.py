@@ -28,9 +28,9 @@ def test_capture_turn_and_illegal_move_is_atomic():
     assert position[1] == "b"
 
 
-@pytest.mark.parametrize("kind,target,blocker", [("R", "d7", "d5"),
-                                               ("B", "g7", "e5"),
-                                               ("Q", "g4", "e4")])
+@pytest.mark.parametrize(
+    "kind,target,blocker", [("R", "d7", "d5"), ("B", "g7", "e5"), ("Q", "g4", "e4")]
+)
 def test_sliding_paths_and_own_pieces(kind, target, blocker):
     position = [{"a1": "wK", "h8": "bK", "d4": "w" + kind, blocker: "bP"}, "w"]
     assert blocker in legal_moves(position, "d4")
@@ -70,8 +70,10 @@ def test_check_must_be_answered():
 
 
 def test_checkmate_finishes_game():
-    position = [{"g1": "wK", "a1": "wR", "g8": "bK",
-                 "f7": "bP", "g7": "bP", "h7": "bP"}, "w"]
+    position = [
+        {"g1": "wK", "a1": "wR", "g8": "bK", "f7": "bP", "g7": "bP", "h7": "bP"},
+        "w",
+    ]
     assert move(position, "a1", "a8") == "a1-a8#"
     assert status(position) == "checkmate"
     assert winner(position) == "White"

@@ -36,18 +36,25 @@ def other(side):
 
 
 def in_check(board, side):
-    king = next((square for square, piece in board.items() if piece == side + "K"), None)
+    king = next(
+        (square for square, piece in board.items() if piece == side + "K"), None
+    )
     return king is not None and any(
-        king in reachable(board, square) for square, piece in board.items()
-        if piece[0] != side)
+        king in reachable(board, square)
+        for square, piece in board.items()
+        if piece[0] != side
+    )
 
 
 def status(position):
     """Return "check", "checkmate", "stalemate", or None for the side to move."""
     board, turn = position[:2]
     check = in_check(board, turn)
-    if any(legal_moves(position, square) for square, piece in board.items()
-           if piece[0] == turn):
+    if any(
+        legal_moves(position, square)
+        for square, piece in board.items()
+        if piece[0] == turn
+    ):
         return "check" if check else None
     return "checkmate" if check else "stalemate"
 
@@ -94,9 +101,13 @@ def reachable(board, source):
                 home = 1 if turn == "w" else 6
                 allowed = (
                     (dx == 0 and dy == direction and not occupant)
-                    or (dx == 0 and dy == 2 * direction and y == home
+                    or (
+                        dx == 0
+                        and dy == 2 * direction
+                        and y == home
                         and not occupant
-                        and FILES[x] + str(y + direction + 1) not in board)
+                        and FILES[x] + str(y + direction + 1) not in board
+                    )
                     or (abs(dx) == 1 and dy == direction and bool(occupant))
                 )
             elif kind == "N":
@@ -106,9 +117,11 @@ def reachable(board, source):
             else:
                 diagonal = abs(dx) == abs(dy)
                 straight = dx == 0 or dy == 0
-                allowed = ((kind == "B" and diagonal)
-                           or (kind == "R" and straight)
-                           or (kind == "Q" and (diagonal or straight)))
+                allowed = (
+                    (kind == "B" and diagonal)
+                    or (kind == "R" and straight)
+                    or (kind == "Q" and (diagonal or straight))
+                )
                 if allowed:
                     sx = (dx > 0) - (dx < 0)
                     sy = (dy > 0) - (dy < 0)
