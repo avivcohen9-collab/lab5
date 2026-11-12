@@ -1,4 +1,5 @@
 """Counts for the captured-pieces sidebar."""
+
 from collections import Counter
 
 from game import new_position

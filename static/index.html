@@ -8,6 +8,9 @@
   <main>
     <div class="layout">
       <section class="frame" aria-label="Chess board"><div id="board"></div></section>
+      <dialog id="promotion" aria-label="Choose a piece to promote to">
+        <form method="dialog"><p>Promote to</p><div id="promotion-choices"></div></form>
+      </dialog>
       <aside>
         <h2 id="turn">White to move</h2>
         <p id="message" role="status" aria-live="polite"></p>
