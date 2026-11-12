@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from captured import missing_pieces
+from captured import captured_pieces
 from computer import choose_move
 from game import (
     legal_moves,
@@ -95,7 +95,7 @@ class Session:
         self.__dict__.update(loaded.__dict__)
 
     def after_move(self):
-        self.captured = missing_pieces(self.position)
+        self.captured = captured_pieces(self.moves)
 
     def view(self):
         return {
