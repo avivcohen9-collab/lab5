@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from computer import choose_move
 from captured import missing_pieces
+from computer import choose_move
 from game import (
     legal_moves,
     move,
