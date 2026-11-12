@@ -9,14 +9,17 @@ from game import (
     winner,
 )
 
-
 # Legal from the standard starting position under this game's rules.
 # Next move: b7-a8, capturing a rook and reaching the last rank.
 PROMOTION_SETUP = [
-    ("a2", "a4"), ("h7", "h5"),
-    ("a4", "a5"), ("h5", "h4"),
-    ("a5", "a6"), ("h4", "h3"),
-    ("a6", "b7"), ("h3", "g2"),
+    ("a2", "a4"),
+    ("h7", "h5"),
+    ("a4", "a5"),
+    ("h5", "h4"),
+    ("a5", "a6"),
+    ("h4", "h3"),
+    ("a6", "b7"),
+    ("h3", "g2"),
 ]
 
 
@@ -48,8 +51,11 @@ class Session:
         }
 
     def computer_to_move(self):
-        return (self.opponent == "computer" and self.position[1] == "b"
-                and status(self.position) not in ("checkmate", "stalemate"))
+        return (
+            self.opponent == "computer"
+            and self.position[1] == "b"
+            and status(self.position) not in ("checkmate", "stalemate")
+        )
 
     def sidebar(self):
         return {}

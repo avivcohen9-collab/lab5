@@ -23,8 +23,10 @@ def evaluate(position, side):
         return CHECKMATE if position[1] != side else -CHECKMATE
     if result == "stalemate":
         return 0
-    return sum(VALUES[piece[1]] * (1 if piece[0] == side else -1)
-               for piece in position[0].values())
+    return sum(
+        VALUES[piece[1]] * (1 if piece[0] == side else -1)
+        for piece in position[0].values()
+    )
 
 
 def choose_move(position, rng=random):
