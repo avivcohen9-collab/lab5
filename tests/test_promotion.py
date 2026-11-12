@@ -44,3 +44,13 @@ def test_choice_only_on_promotion():
     session = Session()
     with pytest.raises(ValueError):
         session.play("e2", "e4", "Q")
+
+
+def test_promoted_pawn_is_not_counted_as_captured() -> None:
+    session = Session()
+    session.dispatch({"action": "promotion-setup"})
+    view = session.dispatch(
+        {"action": "move", "source": "b7", "target": "a8", "promotion": "Q"}
+    )
+    assert view["board"]["a8"] == "wQ"
+    assert view["captured"] == ["bP", "bR", "wP"]
