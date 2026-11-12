@@ -19,10 +19,10 @@ import pytest
 from game import new_position
 from session import Session
 
-
 # --- API adapters ---------------------------------------------------------------------
 # Assumed API, to be confirmed with the partner implementing save/load. If the agreed API
 # differs, change only these three functions.
+
 
 def undo(session):
     """Undo one move. Assumed: an "undo" action that returns the view."""
@@ -49,6 +49,7 @@ def load_fresh(data):
 
 # --- Helpers --------------------------------------------------------------------------
 
+
 def play(session, *moves):
     for source, target in moves:
         session.dispatch({"action": "move", "source": source, "target": target})
@@ -57,9 +58,14 @@ def play(session, *moves):
 def state(session):
     """The game as a player sees it."""
     view = session.view()
-    return {"board": dict(view["board"]), "turn": view["turn"],
-            "moves": list(view["moves"]), "opponent": view["opponent"],
-            "status": view["status"], "winner": view["winner"]}
+    return {
+        "board": dict(view["board"]),
+        "turn": view["turn"],
+        "moves": list(view["moves"]),
+        "opponent": view["opponent"],
+        "status": view["status"],
+        "winner": view["winner"],
+    }
 
 
 def play_recording(session, moves):
@@ -81,11 +87,18 @@ def assert_at_start(session, opponent="human"):
 
 # Both sides capture: e4xd5 (white takes a pawn), d8xd5 (black takes a pawn),
 # d5xa2 (black takes a pawn). The last position is not check.
-TWO_SIDED_CAPTURES = [("e2", "e4"), ("d7", "d5"), ("e4", "d5"), ("d8", "d5"),
-                      ("b1", "c3"), ("d5", "a2")]
+TWO_SIDED_CAPTURES = [
+    ("e2", "e4"),
+    ("d7", "d5"),
+    ("e4", "d5"),
+    ("d8", "d5"),
+    ("b1", "c3"),
+    ("d5", "a2"),
+]
 
 
 # --- Undo -----------------------------------------------------------------------------
+
 
 def test_undo_takes_back_only_the_last_move():
     session = Session()
@@ -108,12 +121,20 @@ def test_undo_at_the_start_does_nothing():
         assert_at_start(session)
 
 
-@pytest.mark.parametrize("moves,capturer,restored", [
-    # White's e4 pawn takes black's d5 pawn.
-    ([("e2", "e4"), ("d7", "d5"), ("e4", "d5")], ("e4", "wP"), ("d5", "bP")),
-    # Black's d5 pawn takes white's e4 pawn.
-    ([("e2", "e4"), ("d7", "d5"), ("a2", "a3"), ("d5", "e4")], ("d5", "bP"), ("e4", "wP")),
-], ids=["white-captures", "black-captures"])
+@pytest.mark.parametrize(
+    "moves,capturer,restored",
+    [
+        # White's e4 pawn takes black's d5 pawn.
+        ([("e2", "e4"), ("d7", "d5"), ("e4", "d5")], ("e4", "wP"), ("d5", "bP")),
+        # Black's d5 pawn takes white's e4 pawn.
+        (
+            [("e2", "e4"), ("d7", "d5"), ("a2", "a3"), ("d5", "e4")],
+            ("d5", "bP"),
+            ("e4", "wP"),
+        ),
+    ],
+    ids=["white-captures", "black-captures"],
+)
 def test_undo_restores_the_captured_piece(moves, capturer, restored):
     session = Session()
     play(session, *moves[:-1])
@@ -166,18 +187,32 @@ def test_new_game_clears_undo_history():
 
 # --- Save and load --------------------------------------------------------------------
 
+
 def test_load_restores_the_full_game_state():
     # Mid-game after captures by both sides, ending in check: d5-e5+ along the open e-file.
     session = Session()
-    play(session, ("e2", "e4"), ("d7", "d5"), ("e4", "d5"), ("d8", "d5"),
-         ("b1", "c3"), ("d5", "e5"))
+    play(
+        session,
+        ("e2", "e4"),
+        ("d7", "d5"),
+        ("e4", "d5"),
+        ("d8", "d5"),
+        ("b1", "c3"),
+        ("d5", "e5"),
+    )
     saved = state(session)
     assert saved["status"] == "check"
 
     restored = load_fresh(save(session))
     assert state(restored) == saved
-    assert restored.view()["moves"] == ["e2-e4", "d7-d5", "e4xd5", "d8xd5",
-                                        "b1-c3", "d5-e5+"]
+    assert restored.view()["moves"] == [
+        "e2-e4",
+        "d7-d5",
+        "e4xd5",
+        "d8xd5",
+        "b1-c3",
+        "d5-e5+",
+    ]
     assert restored.view()["turn"] == "w"
     assert len(restored.view()["board"]) == 30
 
@@ -205,6 +240,7 @@ def test_load_restores_the_opponent(opponent):
 
 
 # --- Save/load combined with undo -----------------------------------------------------
+
 
 def test_undo_after_load_takes_back_a_capture_made_before_saving():
     session = Session()
