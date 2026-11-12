@@ -1,7 +1,7 @@
 // Filled glyphs for both sides; CSS colours them white or black.
 const glyphs = {K:'♚\uFE0E', Q:'♛\uFE0E', R:'♜\uFE0E', B:'♝\uFE0E', N:'♞\uFE0E', P:'♟\uFE0E'};
 const names = {K:'king', Q:'queen', R:'rook', B:'bishop', N:'knight', P:'pawn'};
-let state, selected = null, targets = [], busy = false;
+let state, selected = null, targets = [], promotions = [], busy = false;
 const message = document.querySelector('#message');
 
 async function request(action) {
@@ -118,18 +118,34 @@ async function computerReply() {
   render();
 }
 
+function choosePromotion(side) {
+  const dialog = document.querySelector('#promotion');
+  document.querySelector('#promotion-choices').replaceChildren(...['Q', 'R', 'B', 'N'].map(kind => {
+    const button = document.createElement('button');
+    button.value = kind;
+    button.setAttribute('aria-label', names[kind]);
+    button.append(pieceGlyph(side + kind));
+    return button;
+  }));
+  dialog.returnValue = '';
+  dialog.showModal();
+  return new Promise(resolve => dialog.addEventListener(
+    'close', () => resolve(dialog.returnValue || null), {once: true}));
+}
+
 async function clickSquare(square) {
   if (busy) return;
   busy = true;
   message.textContent = '';
   try {
     if (selected && targets.includes(square)) {
-      state = await request({action:'move', source:selected, target:square});
-      selected = null; targets = [];
+      const promotion = promotions.includes(square) ? await choosePromotion(state.turn) : undefined;
+      if (promotion !== null) state = await request({action:'move', source:selected, target:square, promotion});
+      selected = null; targets = []; promotions = [];
     } else if (selected === square) {
       selected = null; targets = [];
     } else {
-      targets = (await request({action:'legal', source:square})).targets;
+      ({targets, promotions = []} = await request({action:'legal', source:square}));
       selected = state.board[square]?.[0] === state.turn ? square : null;
     }
     render();
