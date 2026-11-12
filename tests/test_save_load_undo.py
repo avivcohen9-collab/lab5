@@ -13,6 +13,8 @@ the game has ended, loading into a game in progress, and bad saved data.
 """
 
 import json
+from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -20,8 +22,17 @@ from game import new_position
 from session import Session
 
 # --- API adapters ---------------------------------------------------------------------
-# Assumed API, to be confirmed with the partner implementing save/load. If the agreed API
-# differs, change only these three functions.
+# Agreed API (team design and feature/save-load): "save" writes the game to
+# game.save.json in the current directory and "load" reads it back; neither takes or
+# returns the data through dispatch. If the API changes, change only these functions.
+
+SAVE_FILE = Path("game.save.json")
+
+
+@pytest.fixture(autouse=True)
+def isolated_save_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Run each test in its own empty directory so a real saved game is never touched."""
+    monkeypatch.chdir(tmp_path)
 
 
 def undo(session):
@@ -29,21 +40,21 @@ def undo(session):
     return session.dispatch({"action": "undo"})
 
 
-def save(session):
-    """Save the game. Assumed: a "save" action whose view carries the data in "saved"."""
-    data = session.dispatch({"action": "save"})["saved"]
-    # Assumed: saved data is JSON, so it can outlive the process. The round trip also
-    # keeps the loaded game from sharing objects with the saved one.
-    return json.loads(json.dumps(data))
+def save(session: Session) -> Any:
+    """Save the game with the "save" action and return what was written to the file."""
+    session.dispatch({"action": "save"})
+    # The saved game is JSON, so it can outlive the process.
+    return json.loads(SAVE_FILE.read_text())
 
 
-def load_fresh(data):
+def load_fresh(data: Any) -> Session:
     """Load saved data into a fresh instance, as after a server restart.
 
-    Assumed: a "load" action that takes the data in "saved".
+    The data is written to the save file and read back with the "load" action.
     """
+    SAVE_FILE.write_text(json.dumps(data))
     session = Session()
-    session.dispatch({"action": "load", "saved": data})
+    session.dispatch({"action": "load"})
     return session
 
 
