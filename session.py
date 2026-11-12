@@ -50,6 +50,24 @@ class Session:
         self.moves.append((source, target, None))
         self.after_move()
 
+    def rebuild(self) -> None:
+        """Rebuild the position and notation by replaying the moves from the start."""
+        self.position = new_position()
+        self.notation = []
+        for source, target, _promotion in self.moves:
+            self.notation.append(move(self.position, source, target))
+        self.after_move()
+
+    def undo(self) -> None:
+        """Take back the last move; against the computer, back to the player's turn."""
+        while self.moves:
+            removed = len(self.moves) - 1
+            self.moves.pop()
+            # White (the player) makes the even-numbered moves.
+            if self.opponent != "computer" or removed % 2 == 0:
+                break
+        self.rebuild()
+
     def save(self) -> None:
         data = {"opponent": self.opponent, "moves": self.moves, "redo": self.redo}
         try:
@@ -109,6 +127,8 @@ class Session:
             self.play(*choose_move(self.position))
         elif command == "legal":
             return {"targets": legal_moves(self.position, action.get("source"))}
+        elif command == "undo":
+            self.undo()
         elif command == "new":
             self.__init__(action.get("opponent", "human"))
         elif command == "promotion-setup":
