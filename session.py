@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from computer import choose_move
+from captured import missing_pieces
 from game import (
     legal_moves,
     move,
@@ -39,6 +40,7 @@ class Session:
             raise ValueError("Unknown opponent")
         self.position = new_position()
         self.notation = []
+        self.captured = []
         self.opponent = opponent
         # The game's history. Everything else can be rebuilt by replaying self.moves.
         self.moves: list[Move] = []
@@ -92,7 +94,7 @@ class Session:
         self.__dict__.update(loaded.__dict__)
 
     def after_move(self):
-        pass
+        self.captured = missing_pieces(self.position)
 
     def view(self):
         return {
@@ -113,7 +115,7 @@ class Session:
         )
 
     def sidebar(self):
-        return {}
+        return {"captured": self.captured}
 
     def dispatch(self, action):
         command = action.get("action")
